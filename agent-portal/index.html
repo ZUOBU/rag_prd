@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>智能客服工作台 - 波波之音 Agent Portal</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Container -->
+    <!--http://localhost:8767/-->
+    <div class="layout">
+
+        <!-- Left: Sessions & Profile -->
+        <div class="col-left">
+            <div class="panel-header">当前会话 (12)</div>
+            <div class="session-list">
+                <div class="session-item active">
+                    <div class="avatar online">王</div>
+                    <div class="session-info">
+                        <div class="session-top">
+                            <span class="session-name">王女士 <span class="badge-ai">AI已备复</span></span>
+                            <span class="session-time">10:42</span>
+                        </div>
+                        <div class="session-preview">关于结构性存款的风险问题...</div>
+                    </div>
+                </div>
+                <div class="session-item">
+                    <div class="avatar">李</div>
+                    <div class="session-info">
+                        <div class="session-top">
+                            <span class="session-name">李先生</span>
+                            <span class="session-time">10:35</span>
+                        </div>
+                        <div class="session-preview">我需要挂失信用卡</div>
+                    </div>
+                </div>
+            </div>
+            <div class="profile-panel">
+                <div class="panel-header" style="font-size: 14px;">客户画像 - 王女士</div>
+                <div class="profile-content">
+                    <div style="font-size:13px; margin-bottom:8px;"><strong>客户分层:</strong> 钻石理财客户</div>
+                    <div style="font-size:13px; margin-bottom:8px;"><strong>最近办理:</strong> 智盈保本基金</div>
+                    <div>
+                        <span class="profile-tag">低风险承受</span>
+                        <span class="profile-tag">活跃用户</span>
+                    </div>
+                    <div class="implicit-pref">
+                        <div class="implicit-pref-title">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                            AI 隐式偏好提取
+                        </div>
+                        <div style="font-size:12px; color:var(--text-muted); line-height:1.5;">
+                            - 习惯在晚间 20:00 左右进线咨询<br>
+                            - 对专业金融术语有抵触，倾向通俗解释<br>
+                            - 非常在意资金流动性与保本属性
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main: Chat Flow -->
+        <div class="col-main">
+            <div class="chat-header">
+                <div style="font-weight: 600;">理财产品咨询 - 王女士</div>
+                <div style="display:flex; gap:12px;">
+                    <button class="btn btn-outline" style="font-size:12px; padding:4px 8px;">转接</button>
+                    <button class="btn btn-outline"
+                        style="font-size:12px; padding:4px 8px; color:var(--danger); border-color:var(--border);">结束会话</button>
+                </div>
+            </div>
+
+            <div class="chat-body" id="chat-body">
+
+                <div class="auto-summary" style="display:block;">
+                    <div class="auto-summary-title">
+                        <span>✨ AI 接手前会话总结</span>
+                        <button class="btn btn-primary" style="padding:2px 8px; font-size:11px;"
+                            onclick="document.querySelector('.auto-summary').style.display='none'">关闭</button>
+                    </div>
+                    客户在转人工前，曾询问了 3 个关于“智盈结构性存款”的问题。核心诉求：想了解最新一期的年化收益率，并确认是否承诺保本。
+                    <div style="margin-top:8px;">
+                        <button class="btn btn-outline" style="font-size:11px; padding:2px 8px;"
+                            onclick="window.applyAutoSummaryReply()">快速填入：请稍等，我正在了解您刚才提出的问题...</button>
+                    </div>
+                </div>
+
+                <div class="msg-row user">
+                    <div class="avatar" style="margin-right:12px; font-size:12px;">王</div>
+                    <div>
+                        <div class="msg-bubble">那个产品具体能保本吗？</div>
+                        <div class="msg-time">10:41:20</div>
+                    </div>
+                </div>
+
+                <!-- Tool Call execution display -->
+                <div class="msg-row user" style="max-width: 100%;">
+                    <div style="width:40px; margin-right:12px;"></div>
+                    <div style="flex:1;">
+                        <div class="tool-card">
+                            <div class="tool-card-header">🛠️ 理财产品信息查询</div>
+                            <div class="tool-card-body">
+                                <p><strong>product_id:</strong> P-88219</p>
+                                <p><strong>status:</strong> success</p>
+                                <p><strong>name:</strong> 智盈结构性存款</p>
+                                <p><strong>risk_level:</strong> R1(低风险)</p>
+                                <p><strong>is_guaranteed:</strong> true</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="chat-footer">
+
+                <!-- AI Suggestion floating bar -->
+                <div class="ai-suggest-bar" id="ai-suggest-bar">
+                    <div class="ai-suggest-header">
+                        <span>✨ Agent 实时回复推荐</span>
+                        <span class="confidence" title="源于大模型置信度评分">置信度: 98%</span>
+                    </div>
+                    <div class="ai-suggest-content" id="ai-suggest-text">
+                        王女士您好，根据帮您查询的结果，这款“智盈结构性存款”属于R1低风险产品，是承诺100%保本的。</div>
+                    <div style="font-size:11px; color:var(--brand-primary); margin-top:4px; cursor:pointer;">来源引用: 🔍
+                        [知识库] 2026年结构性存款说明书.pdf</div>
+                    <div class="ai-suggest-actions">
+                        <button class="btn btn-outline" onclick="applySuggestion()">填入编辑</button>
+                        <button class="btn btn-primary" onclick="sendSuggestion()">一键发送</button>
+                    </div>
+                </div>
+
+                <div class="input-warning" id="input-warning" style="display:none; margin-bottom:8px;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10" />
+                        <line x1="12" y1="8" x2="12" y2="12" />
+                        <line x1="12" y1="16" x2="12.01" y2="16" />
+                    </svg>
+                    检测到触发合规敏感词（如“保本保息”、“绝对收益”），请规范业务用语！
+                </div>
+
+                <div class="input-wrapper">
+                    <div class="input-tools">
+                        <span class="tool-icon" title="表情库">😊</span>
+                        <span class="tool-icon" title="发送图片文件">📁</span>
+                        <span class="tool-icon" title="推介服务">💬</span>
+                    </div>
+                    <textarea id="chat-input" placeholder="输入回复内容，或按 Tab 采纳 AI 建议..."></textarea>
+                    <div class="input-footer">
+                        <span style="font-size:12px; color:var(--text-dim);">Enter 发送 / Shift+Enter 换行</span>
+                        <button class="btn btn-primary" onclick="window.sendMsg()">发送 (Enter)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Knowledge & Tools -->
+        <div class="col-right">
+            <div class="tabs">
+                <div class="tab active" onclick="switchTab('kb')">📚 知识助手</div>
+                <div class="tab" onclick="switchTab('explain')">💡 智能解释</div>
+                <div class="tab" onclick="switchTab('tools')">🛠️ 执行动作</div>
+            </div>
+
+            <!-- KB Tab -->
+            <div class="tab-content" id="kb-panel" style="display:block;">
+                <div class="panel-section">
+                    <div class="kb-search">
+                        <input type="text" placeholder="检索理财条线知识库...">
+                    </div>
+                    <div class="panel-title">系统推荐 (依据对话上下文)</div>
+
+                    <div class="kb-item">
+                        <div class="kb-item-title">《智盈结构性存款操作手册V2》</div>
+                        <div class="kb-item-desc">匹配度 96% | 提及保本和收益率分档规则。</div>
+                    </div>
+
+                    <div class="kb-item"
+                        style="border-color:var(--danger); background:var(--danger-bg); margin-top:20px;">
+                        <div class="kb-alert" title="客户画像风险等机不匹配预警">!</div>
+                        <div class="kb-item-title" style="color:var(--danger);">《激进型期权挂钩产品推介》</div>
+                        <div class="kb-item-desc" style="color:var(--danger);">
+                            合规预警：该产品风险等级(R4)高于客户承受力(R1)！严禁向非相符客户进行产品推介。</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explain Tab -->
+            <div class="tab-content" id="explain-panel" style="display:none;">
+                <div class="panel-section" style="text-align:center; color:var(--text-muted); margin-top:40px;">
+                    <div style="font-size:32px; margin-bottom:12px;">💡</div>
+                    请在中间对话流中划词选中需要解释的文本，<br>在弹出的悬浮菜单中点击“解释”。
+                </div>
+            </div>
+
+            <!-- Tools Tab -->
+            <div class="tab-content" id="tools-panel" style="display:none;">
+                <div class="panel-section">
+                    <div class="kb-item">
+                        <div class="kb-item-title" style="color:var(--text-main); font-family:monospace;">🔍
+                            query_product_info</div>
+                        <div class="kb-item-desc">按产品代码查询产品档案数据库，获取收益率、风险等级等元数据。</div>
+                    </div>
+                    <div class="kb-item" style="margin-top:12px;">
+                        <div class="kb-item-title" style="color:var(--text-main); font-family:monospace;">🛡️
+                            check_eligibility</div>
+                        <div class="kb-item-desc">调用统一风控接口，校验当前会话客户与某款产品的准入名单合规性。</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Selection Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" onclick="handleMenuClick('explain')">💡 AI 解释片段</div>
+        <div class="context-menu-item" onclick="handleMenuClick('search')">🔍 知识库检索</div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

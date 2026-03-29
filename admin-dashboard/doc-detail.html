@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>文档详情配置 - 波波之音 AI智能客服</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* 独立详情页补充样式 */
+    .detail-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      background: var(--bg-deep);
+    }
+
+    .header-bar {
+      height: 60px;
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      justify-content: space-between;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    }
+
+    .main-area {
+      flex: 1;
+      padding: 20px 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea.markdown-editor {
+      width: 100%;
+      height: 100%;
+      resize: none;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--foreground-muted);
+      background: var(--bg-base);
+      outline: none;
+    }
+
+    textarea.markdown-editor:focus {
+      border-color: var(--accent-light);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .pdf-viewer-mock {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-sm);
+      background: #f8fafc;
+      color: var(--foreground-dim);
+      font-size: 14px;
+      gap: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="detail-layout">
+    <div class="header-bar">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <button class="detail-back"
+          onclick="window.history.length > 1 ? window.history.back() : window.location.href='index.html'">←
+          返回知识库列表</button>
+        <div style="width: 1px; height: 20px; background: var(--border);"></div>
+        <div style="font-weight: 600; color: var(--foreground); font-size: 15px;">个人贷款业务操作指引V3.2.docx</div>
+        <div class="badge-status info"><span class="dot"></span>配置文件</div>
+      </div>
+      <div class="detail-meta" style="gap: 20px;">
+        <div class="detail-meta-item">文档ID: <span>DOC-2026-0282</span></div>
+        <div class="detail-meta-item">工具: <span>python-docx + Unstructured</span></div>
+      </div>
+    </div>
+
+    <div class="main-area">
+      <!-- 进度条 -->
+      <div class="stepper" id="stepper">
+        <!-- JS渲染 -->
+      </div>
+
+      <!-- 内容区 -->
+      <div id="step-content" style="flex:1; display:flex; flex-direction:column;"></div>
+    </div>
+  </div>
+
+  <script>
+    const STEPS = [
+      { id: 'parse', label: '识别与解析' },
+      { id: 'chunk', label: '分块' },
+      { id: 'meta', label: '元数据与标签' },
+      { id: 'submit', label: '提交审核' },
+      { id: 'review', label: '审核' },
+      { id: 'ingest', label: '入库' }
+    ];
+    let currentStep = 0;
+
+    function renderStepper() {
+      const container = document.getElementById('stepper');
+      let html = '';
+      STEPS.forEach((step, index) => {
+        let statusClass = '';
+        if (index < currentStep) statusClass = 'done';
+        else if (index === currentStep) statusClass = 'active';
+
+        const flexValue = index === STEPS.length - 1 ? '0' : '1';
+        const circleContent = index < currentStep ? '✓' : index + 1;
+        const lineHtml = index < STEPS.length - 1 ? '<div class="stepper-line"></div>' : '';
+
+        html += '<div class="stepper-item ' + statusClass + '" onclick="goToStep(' + index + ')" style="flex:' + flexValue + '">' +
+          '<div class="stepper-circle">' + circleContent + '</div>' +
+          '<div class="stepper-label">' + step.label + '</div>' +
+          lineHtml +
+          '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function goToStep(index) {
+      if (index >= 0 && index < STEPS.length) {
+        currentStep = index;
+        renderStepper();
+        renderContent();
+      }
+    }
+
+    function renderContent() {
+      const container = document.getElementById('step-content');
+      let content = '';
+
+      if (currentStep === 0) {
+        content = [
+          '<div class="dual-pane" style="flex:1;">',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title"><span class="pane-icon">📄</span> 文档原文视图（Word / PDF）</div>',
+          '    <div class="pdf-viewer-mock" style="flex:1;">',
+          '      <span style="font-size:32px;">📑</span>',
+          '      <span>( PDF / Word 图片或富文本预览呈现区 )</span>',
+          '    </div>',
+          '  </div>',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title"><span class="pane-icon">📝</span> Markdown 识别与解析结果（可校对）</div>',
+          '    <div style="flex:1; margin-bottom: 12px;">',
+          '      <textarea class="markdown-editor"># 个人贷款业务操作指引\n\n## 第一章 总则\n第一条 为规范个人贷款业务，防范信贷风险，保障银企双方合法权益，根据国家有关法律法规和本行信贷管理制度，制定本指引。\n\n第二条 个人贷款对象为具有完全民事行为能力的中国境内居民，以及在本行服务辖区内有固定居所的境外自然人。</textarea>',
+          '    </div>',
+          '    <div class="detail-actions">',
+          '      <button class="btn" style="color:var(--warning);">文本解析异常 (展示用)</button>',
+          '      <button class="btn">重新解析</button>',
+          '      <button class="btn btn-primary" onclick="goToStep(1)">校对完成</button>',
+          '    </div>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+      }
+      else if (currentStep === 1) {
+        content = [
+          '<div class="dual-pane" style="flex:1;">',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title"><span class="pane-icon">📝</span> 解析结果文本</div>',
+          '    <div class="mock-markdown" style="flex:1; overflow-y:auto;">',
+          '      <h1>个人贷款业务操作指引</h1>',
+          '      <p>第一条 为规范个人贷款业务，防范信贷风险，保障银企双方合法权益，根据国家有关法律法规和本行信贷管理制度，制定本指引。</p>',
+          '      <p>第二条 个人贷款对象为具有完全民事行为能力的中国境内居民，以及在本行服务辖区内有固定居所的境外自然人。</p>',
+          '    </div>',
+          '  </div>',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title" style="justify-content: space-between;">',
+          '      <span><span class="pane-icon">🧩</span> Chunk 子父级分块树状图</span>',
+          '      <div style="font-size:12px; font-weight:normal; display:flex; align-items:center; gap:6px;">',
+          '        Overlap设置: <input type="number" value="15" style="width:40px; text-align:center; border:1px solid var(--border); border-radius:4px; outline:none; font-family:var(--font-mono);" /> %',
+          '      </div>',
+          '    </div>',
+          '    <div class="chunk-tree" style="flex:1; overflow-y:auto; border:1px solid var(--border-light); border-radius: var(--radius-sm); padding:10px;">',
+          '      <div class="chunk-parent">',
+          '        <span class="chunk-id">PRNT-001</span> 第一章 总则',
+          '      </div>',
+          '      <div class="chunk-child">',
+          '        <span class="chunk-id">CHK-001</span> 第一条 为规范个人贷款业务，防范信贷风险...',
+          '        <span class="overlap-marker">▶ Overlap标记: 第二条 个人贷款对</span>',
+          '      </div>',
+          '      <div class="chunk-child">',
+          '        <span class="chunk-id">CHK-002</span> 第二条 个人贷款对象为具有完全民事行为能力...',
+          '      </div>',
+          '      <div class="chunk-parent" style="margin-top:10px;">',
+          '        <span class="chunk-id">PRNT-002</span> 第二章 申请条件',
+          '      </div>',
+          '      <div class="chunk-child" style="border-left-color:var(--warning);">',
+          '        <span class="chunk-id" style="color:var(--warning);">CHK-003</span> <span style="color:var(--warning);">(分块异常 / 需手动干预)</span> 第三条 申请人须具备...',
+          '      </div>',
+          '    </div>',
+          '    <div class="detail-actions">',
+          '      <button class="btn btn-sm" style="margin-right:auto;">+ 一键合并</button>',
+          '      <button class="btn btn-sm" style="margin-right:auto;">- 手动拆分</button>',
+          '      <button class="btn">重新分块</button>',
+          '      <button class="btn btn-primary" onclick="goToStep(2)">分块检查完成</button>',
+          '    </div>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+      }
+      else if (currentStep === 2) {
+        content = [
+          '<div class="dual-pane" style="flex:1;">',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title"><span class="pane-icon">🧩</span> 分块结构预览</div>',
+          '    <div class="chunk-parent" style="font-size:12px; margin-bottom:10px;"><span class="chunk-id">全体文档</span></div>',
+          '    <div class="mock-markdown">已完成 RAGFlow 分段：包含 42 个父级标题，总计 128 个底层 Chunk。左侧配置将全局自动应用至所有子 Chunk。</div>',
+          '  </div>',
+          '  <div class="pane" style="display:flex; flex-direction:column;">',
+          '    <div class="pane-title"><span class="pane-icon">🏷️</span> 配置元数据与标签</div>',
+          '    <div class="meta-form" style="flex:1;">',
+          '      <div class="section-label" style="font-size:11px; margin-top:0;">元数据字典字段</div>',
+          '      <div class="meta-row">',
+          '        <div class="meta-label">应用渠道</div>',
+          '        <select class="meta-value"><option>全渠道</option><option>App客户端</option><option>小程序</option><option>行员端</option><option>网银PC端</option></select>',
+          '      </div>',
+          '      <div class="meta-row">',
+          '        <div class="meta-label">客户分层</div>',
+          '        <select class="meta-value"><option>全部客户</option><option>VIP理财客户</option><option>普通客群</option></select>',
+          '      </div>',
+          '      <div style="height:1px; background:var(--border-light); margin: 8px 0;"></div>',
+          '      <div class="section-label" style="font-size:11px;">自定义文档标签</div>',
+          '      <div class="tag-list" style="margin-bottom:12px;">',
+          '        <div class="tag-pill">2026合规年审 <span class="tag-remove">×</span></div>',
+          '        <div class="tag-pill">信用贷规则 <span class="tag-remove">×</span></div>',
+          '        <button class="btn-link btn-sm" style="border:1px dashed var(--accent-light); border-radius:12px;">+ 添加标签</button>',
+          '      </div>',
+          '    </div>',
+          '    <div class="detail-actions">',
+          '      <button class="btn">应用至全文档</button>',
+          '      <button class="btn btn-primary" onclick="goToStep(3)">元数据与标签配置完成</button>',
+          '    </div>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+      }
+      else if (currentStep === 3) {
+        content = [
+          '<div class="card" style="padding:40px; text-align:center; max-width:600px; margin:40px auto; width:100%;">',
+          '   <div style="font-size:52px; margin-bottom:20px;">📋</div>',
+          '   <h2 style="font-size:20px; color:var(--foreground); margin-bottom:10px;">确认提交审核</h2>',
+          '   <p style="color:var(--foreground-dim); font-size:13px; margin-bottom:30px; line-height:1.6;">文档的分块、子母层级及元数据标签均已配置完毕。<br/>当前操作将文档推送至下一级文档管理员进行入库终审，请确认提交。</p>',
+          '   <div class="detail-actions" style="justify-content:center; border:none; padding:0;">',
+          '      <button class="btn" onclick="goToStep(2)">上一步</button>',
+          '      <button class="btn">暂存</button>',
+          '      <button class="btn btn-primary" onclick="goToStep(4)">提交审核</button>',
+          '   </div>',
+          '</div>'
+        ].join('\n');
+      }
+      else if (currentStep === 4) {
+        content = [
+          '<div class="card" style="padding:30px; max-width:700px; margin:20px auto; width:100%;">',
+          '   <div class="pane-title" style="font-size:16px; margin-bottom:20px;"><span class="pane-icon" style="font-size:20px;">🛡️</span> 文档管理员复核阶段 (Demo)</div>',
+          '   <div style="background:var(--bg-elevated); padding:20px; border-radius:var(--radius); margin-bottom:26px;">',
+          '      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:24px; margin-bottom:16px;">',
+          '        <div><div style="font-size:12px; color:var(--foreground-dim);">解析块数</div><div style="font-size:18px; font-weight:700; font-family:var(--font-mono); color:var(--foreground);">128 Chunks</div></div>',
+          '        <div><div style="font-size:12px; color:var(--foreground-dim);">绑定标签</div><div style="font-size:14px; font-weight:600; color:var(--accent-light);">2026合规年审, 信用贷规则</div></div>',
+          '        <div><div style="font-size:12px; color:var(--foreground-dim);">应用渠道</div><div style="font-size:14px; font-weight:600; color:var(--foreground);">全渠道</div></div>',
+          '      </div>',
+          '      <a href="#" style="color:var(--accent-light); font-size:13px; text-decoration:none; font-weight:500;">🔍 预览全文分块切片结果 -></a>',
+          '   </div>',
+          '   <div class="detail-actions" style="justify-content:flex-end; border-top:1px solid var(--border-light); padding-top:20px;">',
+          '      <button class="btn" style="color:var(--destructive); border-color:var(--destructive); margin-right:auto;" onclick="alert(\'进入驳回原因填写步骤\')">驳回</button>',
+          '      <button class="btn" onclick="alert(\'请选择入库时间...\')">仅通过不入库</button>',
+          '      <button class="btn btn-primary" onclick="goToStep(5)">通过并入库</button>',
+          '   </div>',
+          '</div>'
+        ].join('\n');
+      }
+      else if (currentStep === 5) {
+        content = [
+          '<div class="card" style="padding:60px 20px; max-width:700px; margin:20px auto; width:100%;">',
+          '  <div class="ingest-status" style="height:auto;">',
+          '    <div class="ingest-icon" style="color:var(--positive); font-size:64px; margin-bottom:10px;">✅</div>',
+          '    <div class="ingest-text" style="color:var(--foreground); font-size:22px; font-weight:700;">向量分析与入库完成</div>',
+          '    <div class="ingest-detail" style="font-size:13px; margin:16px 0 30px; line-height:1.6; max-width:420px; color:var(--foreground-muted);">',
+          '      <span class="badge-status success" style="margin-bottom:8px;">BAAI/bge-m3</span><br/>',
+          '      共计 128 个 Chunk 已成功写入 Milvus 向量库。<br/>倒排索引已安全同步至 Elasticsearch。<br/>文档状态更新为 <b>"多库同步完成"</b>。',
+          '    </div>',
+          '    <div style="display:flex; gap:12px;">',
+          '      <button class="btn" onclick="alert(\'触发单片重向量化：重做被人工修改过的最新 Chunk\')">局部重向量化</button>',
+          '      <button class="btn btn-primary" onclick="window.history.back() || (window.location.href=\'index.html\')">返回列表</button>',
+          '    </div>',
+          '  </div>',
+          '</div>'
+        ].join('\n');
+      }
+
+      container.innerHTML = content;
+    }
+
+    renderStepper();
+    renderContent();
+  </script>
+</body>
+
+</html>

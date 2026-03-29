@@ -7,9 +7,8 @@
 - **生命周期**：距上次交互超24小时即清空。
 - **字段**：
   - `session_id`: 会话唯一绑定标识。
-  - `user_type`: `staff`（内部员工）或 `customer`（外部客户）。权限分流依据之一。
   - `turn_count`: 当前有效对话交互轮次。
-  - `dialogue_history`: 最近5-10轮的上下文文本流 `[{role: "user/assistant", content: "..."}]`。
+  - `dialogue_history`: 最近5轮的上下文文本流 `[{role: "user/assistant", content: "..."}]`。
   - `active_intent_slots`: 正在执行中且挂起的业务槽位字典（如 `{card_num: null}`）。
 
 ## 16.2 长期记忆
