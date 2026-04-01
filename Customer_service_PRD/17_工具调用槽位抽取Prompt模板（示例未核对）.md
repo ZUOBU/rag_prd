@@ -7,7 +7,6 @@
 - 一级意图识别结果（Intent_level1）: {{predicted_intent_level1}}
 - 二级意图识别结果（Intent_level2）: {{predicted_intent_level2}}
 - 历史记忆与偏好（Memory Data）: {{memory_data}}
-- 上下文（Context）: {{history}} *(与memory_data冲突时，以history为准)*
 - 槽位定义字典（Slot Schema）: {{slot_schema_json}} *(被调用工具所需要的字段名、数据类型、是否必填、字段描述)*
 
 # Core Rules (严格执行)

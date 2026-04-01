@@ -5,7 +5,6 @@
 # 注入参数（Input Context）
 - **[当前时间]**: {{current_time}} （用于对齐新老政策规定与绝对/相对时间节点的计算）
 - **[用户Memory]**: {{memory_data}} （包含客户身份等基本信息）
-- **[历史上下文]**: {{history}} （最近5轮的对话流水，用于平滑语境过渡）
 - **[相关知识片段 (Chunks)]**: 
 {{reranked_results}} （已重排的相关段落）
 - **[改写后的Query]**: {{rewritten_queries}} （经过指代消解补全后的终端明确问题）

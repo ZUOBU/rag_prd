@@ -3,7 +3,6 @@
 
 # Input Context
 - 当前系统时间: {{current_time}} // 当前时间, 用于时间对齐
-- 历史对话：{{history}} // 用户最近的5条对话记录
 - 当前用户输入: {{user_input}} // 用户的当前查询
 - 记忆: {{memory_data}} // 包含用户基本信息、偏好等。
 
